@@ -77,7 +77,11 @@ This week, the pipeline was improved by replacing the single train-test evaluati
 
 Another changes added this week were:
 
-- The Preprocessing is included inside the model pipeline. This ensures that imputation, encoding and scaling are fitted only on the training portion of each fold, reducing the risk of data leakage.
+- The Preprocessing is included inside the model pipeline. This ensures that imputation, encoding and scaling are fitted only on the training portion of each fold, reducing the risk of data leakage. 
+- The enconding used was target encoding.
+- The scaler used was robust scaling, being less affected by extreme values.
+- For numeric imputation: Missing numerical values are filled using the median.
+- For categorical imputation: Missing categorical values are filled using the most frequent category.
 - Training and validation accuracy are recorded for every fold, together with the train-validation gap. This makes it easier to identify potential overfitting and compare how well the models generalize.
 - Predictions are generated for each observation using a model that was not trained on that observation. These predictions can be used for classification and fairness evaluation without using the locked test set.
 - The test set is kept separate and is not used during cross-validation or model selection. It can therefore be reserved for the final evaluation of the selected model.
