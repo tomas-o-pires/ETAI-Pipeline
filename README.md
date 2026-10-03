@@ -1,6 +1,6 @@
 20231652 Tomás Pires
 
-week 2
+### week 2
 DT: Train accuracy: 0.829
 Test accuracy:  0.629
 Gap (train - test): +0.199
@@ -11,7 +11,7 @@ Gap (train - test): +0.003
 
 Conclusion: The Logistic Regression demonstrates better generalization than the Decision Tree. Although the Decision Tree achieves higher training accuracy, it has lower test accuracy giving a large train-test gap indicating overfitting. While the Logistic Regression achieves a lower training accuracy, but with a train-test gap of only 0.003 points.
 
-week 3
+### week 3
 
 DT: Train accuracy: 0.789
 Test accuracy:  0.611
@@ -45,3 +45,53 @@ Conclusion this week results show a small decrease in both training and test acc
 - For the Decision Tree (DT), training accuracy decreased from 0.829 to 0.789, while test accuracy decreased from 0.629 to 0.611. The train-test gap also became slightly smaller (0.199 to 0.178). This may suggest that the cleaning steps removed or corrected some patterns that the tree was able to recognise. However, the smaller gap indicates slightly less overfitting.
 - For Logistic Regression (LR), training accuracy decreased from 0.680 to 0.672, and test accuracy decreased from 0.677 to 0.667.
 
+
+### week 4 
+
+Dummy: Cross-validation (5 stratified folds, metric: accuracy)
+
+Train       mean = 0.549   std = 0.000
+Validation  mean = 0.549   std = 0.000
+Gap         mean = -0.000   std = 0.000
+
+LR: Cross-validation (5 stratified folds, metric: accuracy)
+
+Train       mean = 0.677   std = 0.003
+Validation  mean = 0.674   std = 0.012
+Gap         mean = +0.003   std = 0.014
+
+DT: Cross-validation (5 stratified folds, metric: accuracy)
+
+Train       mean = 0.696   std = 0.010
+Validation  mean = 0.607   std = 0.012
+Gap         mean = +0.090   std = 0.020
+
+RF: Cross-validation (5 stratified folds, metric: accuracy)
+
+Train       mean = 0.736   std = 0.014
+Validation  mean = 0.648   std = 0.019
+Gap         mean = +0.089   std = 0.020
+
+
+This week, the pipeline was improved by replacing the single train-test evaluation with 5-fold stratified cross-validation. Having the models become more reliable 
+
+Another changes added this week were:
+
+- The Preprocessing is included inside the model pipeline. This ensures that imputation, encoding and scaling are fitted only on the training portion of each fold, reducing the risk of data leakage.
+- Training and validation accuracy are recorded for every fold, together with the train-validation gap. This makes it easier to identify potential overfitting and compare how well the models generalize.
+- Predictions are generated for each observation using a model that was not trained on that observation. These predictions can be used for classification and fairness evaluation without using the locked test set.
+- The test set is kept separate and is not used during cross-validation or model selection. It can therefore be reserved for the final evaluation of the selected model.
+- A Dummy Classifier was added as a baseline, achieving a validation accuracy of 0.549. This provides a minimum benchmark that the machine-learning models should outperform.
+- The Random Forest model was added.
+ 
+Regarding this week Results:
+
+- Dummy Classifier, both Training and validation accuracy are 0.549, with essentially no gap.
+- Logistic Regression: Achieved the highest mean validation accuracy at 0.674, with a mean training accuracy of 0.677 and a very small gap of 0.003. The similar training and validation performance indicates stable generalization across the folds.
+- Decision Tree: Achieved a training accuracy of 0.696 and validation accuracy of 0.607, reducing the gap to 0.090. Although the gap is smaller, it still shows considerably more overfitting than Logistic Regression.
+- Random Forest: Achieved a training accuracy of 0.736 and validation accuracy of 0.648, with a gap of 0.089. It performs better on validation data than the Decision Tree, but also shows a noticeable overfitting.
+
+Conclusion
+
+The Week 4 results reinforce the pattern observed in previous weeks. Logistic Regression continues to show the strongest generalization, with the highest validation accuracy and the smallest train-validation gap. The Decision Tree continues to show signs of overfitting, although its gap has decreased compared with Week 3. Random Forest improves validation performance compared with the individual Decision Tree, but still has a substantially larger train-validation gap than Logistic Regression.
+More relevant is the fact this week improves the reliability of the models. Instead of drawing conclusions from one train-test split, the models are now compared using five stratified folds, while the final test set remains untouched for later evaluation.
