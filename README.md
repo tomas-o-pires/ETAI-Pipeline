@@ -1,6 +1,6 @@
 20231652 Tomás Pires
 
-### week 2
+### Week 2
 DT: Train accuracy: 0.829
 Test accuracy:  0.629
 Gap (train - test): +0.199
@@ -11,7 +11,7 @@ Gap (train - test): +0.003
 
 Conclusion: The Logistic Regression demonstrates better generalization than the Decision Tree. Although the Decision Tree achieves higher training accuracy, it has lower test accuracy giving a large train-test gap indicating overfitting. While the Logistic Regression achieves a lower training accuracy, but with a train-test gap of only 0.003 points.
 
-### week 3
+### Week 3
 
 DT: Train accuracy: 0.789
 Test accuracy:  0.611
@@ -46,7 +46,7 @@ Conclusion this week results show a small decrease in both training and test acc
 - For Logistic Regression (LR), training accuracy decreased from 0.680 to 0.672, and test accuracy decreased from 0.677 to 0.667.
 
 
-### week 4 
+### Week 4 
 
 Dummy: Cross-validation (5 stratified folds, metric: accuracy)
 
@@ -100,12 +100,12 @@ Conclusion
 The Week 4 results reinforce the pattern observed in previous weeks. Logistic Regression continues to show the strongest generalization, with the highest validation accuracy and the smallest train-validation gap. The Decision Tree continues to show signs of overfitting, although its gap has decreased compared with Week 3. Random Forest improves validation performance compared with the individual Decision Tree, but still has a substantially larger train-validation gap than Logistic Regression.
 More relevant is the fact this week improves the reliability of the models. Instead of drawing conclusions from one train-test split, the models are now compared using five stratified folds, while the final test set remains untouched for later evaluation.
 
-### week 5/6
+### Weeks 5/6
 
-Weeks 5 and 6 were completed during the same week, focusing on hyperparameter tuning and ensemble learning methods. Hyperparameter tuning was introduced to optimize model configurations and improve predictive performance. Additionally, two new ensemble models, Oblique Random Forest and AdaBoost, were implemented to expand the range of models evaluated and compare their performance against the existing classifiers.
+Weeks 5 and 6 were done together, focusing on hyperparameter tuning and ensemble learning methods. Hyperparameter tuning was introduced to optimize model configurations and improve predictive performance(tuning.py was added). Additionally, two new ensemble models, Oblique Random Forest and AdaBoost, were implemented to expand the range of models evaluated and compare their performance against the existing classifiers.
 
-##table of results 
-| Model | Validation Default: CV mean ± std (gap) | Validation Tuned: nested CV mean ± std (gap) | Tuning score (best trial) | Optimism | Chosen hyperparameters |
+### Table of results
+| Model | Default: CV mean ± std (gap) | Tuned: nested CV mean ± std (gap) | Tuning score (best trial) | Optimism | Chosen hyperparameters |
 |---|---|---|---|---|---|
 | Logistic regression | 0.674 ± 0.012 (+0.003) | 0.677 ± 0.013 (+0.001) | 0.678 | +0.001 |'model__C': 0.4145086347025647, 'model__solver': 'liblinear', 'model__max_iter': 1328 |
 | Decision tree | 0.602 ± 0.020 (+0.094) | 0.673 ± 0.010 (+0.010) | 0.679 | +0.003 |'model__max_depth': 9, 'model__min_samples_leaf': 112, 'model__criterion': 'entropy' |
@@ -113,6 +113,4 @@ Weeks 5 and 6 were completed during the same week, focusing on hyperparameter tu
 | Oblique random forest | 0.645 ± 0.011 (+0.120) | 0.682 ± 0.014 (+0.009) | 0.683 | -0.001 | model__tree__max_depth': 5, 'model__tree__min_samples_leaf': 1, 'model__estimator__project__n_components': 10 |
 | AdaBoost | 0.676 ± 0.012 (+0.006) | 0.681 ± 0.012 (+0.006) | 0.685 | +0.001 |`model__max_depth': 4, 'model__n_estimators': 176, 'model__learning_rate': 0.14640181866811797|
 
-3–5 sentences: which model would you choose, and is its lead bigger than the fold-to-fold std?
-Do the chosen hyperparameters match how each model works (deep or shallow trees, and why)?
-Which model and which number would you report?
+From these results, the best model for now is AdaBoost, which achieves a nested cross-validation accuracy of 0.681 ± 0.012, with a small train-validation gap of +0.006. Although Oblique Random Forest achieves a slightly higher accuracy (0.682), AdaBoost has a lower standard deviation and a smaller train-validation gap, being more consistent regarding performance with less overfitting.
