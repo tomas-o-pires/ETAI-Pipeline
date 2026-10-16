@@ -1,14 +1,6 @@
 """
-Preprocessing -- deliberately minimal for week 2.
-
-This is intentionally the weakest part of the pipeline:
-    - missing values are simply dropped (no imputation strategy)
-    - categorical columns are one-hot encoded with no thought given to unseen categories or cardinality
-    - a single train/test split is used (no cross-validation)
-
-You will replace this with something better in the coming weeks.
-
-One thing that is NOT naive, on purpose: `sensitive_attr` (race) is kept out of the model's input features entirely. It's split alongside the data so it's still available afterwards -- not to train on, but to check whether the model treats different groups differently. See src/evaluate.py:fairness_report.
+Preprocessing: rule-based cleaning, training-only de-duplication, the feature/target split,
+the leak-safe preprocessor and the development/test split.
 """
 import numpy as np
 import pandas as pd
@@ -57,10 +49,8 @@ def clean_dataset(df: pd.DataFrame, diagnostics_config: dict) -> pd.DataFrame:
 
 def drop_duplicate_rows(df: pd.DataFrame, id_column: str = None) -> pd.DataFrame:
     """
-    TRAINING DATA ONLY (week 4). Drops exact duplicate rows and repeated ids (keeping
-    the first). Must run *before* `split_dev_test()`.
-
-    Never call this on data you're predicting for: every row there needs a prediction.
+    Training data only, before `split_dev_test`: drops exact duplicate rows and repeated ids
+    (keeping the first). Never call it on data to predict: every row needs a prediction.
     """
     out = df.drop_duplicates()
     if id_column and id_column in out.columns:
@@ -82,7 +72,7 @@ def add_missingness_indicators(df: pd.DataFrame, mnar_indicator_sources: list) -
 def split_features_target(df: pd.DataFrame, data_config: dict, mnar_indicator_sources: list):
     """
     Returns (X, y, extras). `y` is `None` and `extras` has no target column when called
-    on label-free inference data -- nothing downstream requires the target to be present.
+    on label-free inference data.
     """
     target = data_config["target"]
     sensitive_attr = data_config["sensitive_attr"]
@@ -124,16 +114,10 @@ def build_preprocessor(preprocessing_config: dict) -> ColumnTransformer:
     training part of each CV fold only, because this object is placed *inside* the
     model's sklearn Pipeline (see main.py).
     """
-    encoder_name = preprocessing_config["encoder"]
-    scaler_name = preprocessing_config["scaler"]
-    numeric_features = preprocessing_config["numeric_features"]
-    categorical_features = preprocessing_config["categorical_features"]
-    mnar_indicator_sources = preprocessing_config.get("mnar_indicator_sources", [])
     imputation = preprocessing_config.get("imputation", {})
-
-    scaler_factory = _SCALERS[scaler_name]
+    scaler_factory = _SCALERS[preprocessing_config["scaler"]]
     scaler = scaler_factory() if callable(scaler_factory) else scaler_factory
-    encoder = _ENCODERS[encoder_name](preprocessing_config.get("random_state"))
+    encoder = _ENCODERS[preprocessing_config["encoder"]](preprocessing_config.get("random_state"))
 
     numeric_pipeline = Pipeline([
         ("impute", SimpleImputer(strategy=imputation.get("numeric_strategy", "median"))),
@@ -144,27 +128,18 @@ def build_preprocessor(preprocessing_config: dict) -> ColumnTransformer:
         ("encode", encoder),
     ])
 
-    indicator_cols = [f"{c}_was_missing" for c in mnar_indicator_sources]
+    indicator_cols = [f"{c}_was_missing" for c in preprocessing_config.get("mnar_indicator_sources", [])]
 
     return ColumnTransformer([
-        ("numeric", numeric_pipeline, numeric_features),
-        ("categorical", categorical_pipeline, categorical_features),
+        ("numeric", numeric_pipeline, preprocessing_config["numeric_features"]),
+        ("categorical", categorical_pipeline, preprocessing_config["categorical_features"]),
         ("indicators", "passthrough", indicator_cols),
     ])
 
 
 def split_dev_test(X, y, extras, test_size: float, random_state: int):
     """
-    Sets the final test set aside (week 4 -- replaces week 2/3's `split_train_test`).
-
-    Stratified split of X, y and the extras frame (race/score_text, kept for the fairness
-    report) together, so all three stay row-aligned. Returns a *development* set and a
-    *locked test set*:
-      - development set: everything we're allowed to learn from and compare models on.
-        Cross-validation (src/evaluate.py) splits it again into train/validation folds.
-      - locked test set: never used to fit, tune, compare or choose anything. Its size and seed live in config.yaml's `test_set` section and are never changed after today.
+    Returns X_dev, X_test, y_dev, y_test, extras_dev, extras_test, row-aligned.
     """
-    X_dev, X_test, y_dev, y_test, extras_dev, extras_test = train_test_split(
-        X, y, extras, test_size=test_size, random_state=random_state, stratify=y
-    )
-    return X_dev, X_test, y_dev, y_test, extras_dev, extras_test
+
+    return train_test_split(X, y, extras, test_size=test_size, random_state=random_state, stratify=y)
