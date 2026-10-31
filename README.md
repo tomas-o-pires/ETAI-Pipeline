@@ -134,7 +134,7 @@ Overall, Week 7 focused on expanding the available models and making model evalu
 | oblique_random_forest | 0.687 ± 0.017 | 0.727 ± 0.014 |'estimator__tree__max_depth': 13, 'estimator__tree__min_samples_leaf': 91, 'estimator__project__n_components': 8 |
 | adaboost | 0.723 ± 0.016 | 0.726 ± 0.014 |'estimator__max_depth': 4, 'n_estimators': 55, 'learning_rate': 0.16738085788752127 |
 | gradient_boosting | 0.726 ± 0.015 | 0.728 ± 0.014 |'n_estimators': 216, 'learning_rate': 0.016814344160113716, 'max_depth': 3, 'min_samples_leaf': 1, 'subsample': 0.5781493080610196 |
-| hist_gradient_boosting | 0.726 ± 0.015 | 0.728 ± 0.014 |'n_estimators': 216, 'learning_rate': 0.016814344160113716, 'max_depth': 3, 'min_samples_leaf': 1, 'subsample': 0.5781493080610196 |
+| hist_gradient_boosting | 0.715 ± 0.022 | 0.729 ± 0.015 |'max_iter': 364, 'learning_rate': 0.07844942622426945, 'max_leaf_nodes': 2, 'min_samples_leaf': 6, 'l2_regularization': 0.0026935425710306635 |
 
 
 From these results and using ROC-AUC as the selected metric, the Gradient Boosting, Adaboost and Histogram Gradient Boosting models achieved the highest reported performance(~0.728), though their advantage over the other models is not that significant, with Naive bayes having the worst performance with(0.707).
