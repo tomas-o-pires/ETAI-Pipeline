@@ -114,3 +114,27 @@ Weeks 5 and 6 were done together, focusing on hyperparameter tuning and ensemble
 | AdaBoost | 0.676 ± 0.012 (+0.006) | 0.681 ± 0.012 (+0.006) | 0.685 | +0.001 |`model__max_depth': 4, 'model__n_estimators': 176, 'model__learning_rate': 0.14640181866811797|
 
 From these results, the best model for now is AdaBoost, which achieves a nested cross-validation accuracy of 0.681 ± 0.012, with a small train-validation gap of +0.006. Although Oblique Random Forest achieves a slightly higher accuracy (0.682), AdaBoost has a lower standard deviation and a smaller train-validation gap, being more consistent regarding performance with less overfitting.
+
+### Week 7
+This week, the pipeline was expanded with new models and improvements to model evaluation, hyperparameter tuning, and results reporting.
+ - Additional models such as Gradient Boosting, Histogram Gradient Boosting, and Naive Bayes were added, allowing for more algorithms to be compared.
+ - The evaluation process was improved to support different scoring metrics instead of relying only on accuracy, having the selection_metric as "roc_auc".
+ - Cross-validation reports, out-of-fold classification, fairness evaluations as well as tuning and nested cross-validation function were updated to support the new evaluation framework.
+ - data/run.csv was added registering the performance of the runs of the different models.
+Overall, Week 7 focused on expanding the available models and making model evaluation more flexible and comprehensive, allowing comparisons based on multiple performance metrics rather than accuracy alone.
+
+### Scoreboard
+| Model | Default: Roc_auc mean ± std | Tuned: Roc_auc mean ± std | Best hyperparameters |
+|---|---|---|---|
+| Dummy(floor) | 0.500 | 0.500 |   |
+| naive_bayes | 0.689 ± 0.011 | 0.707 ± 0.011 |'var_smoothing': 0.09069648209152663 |
+| logistic_regression | 0.719 ± 0.014 | 0.718 ± 0.013 |'model_C': 0.19069966103000435, 'solver': 'lbfgs', 'max_iter': 1271 |
+| decision_tree | 0.600 ± 0.017 | 0.712 ± 0.016 |'max_depth': 12, 'min_samples_leaf': 107, 'criterion': 'gini' |
+| random_forest | 0.686 ± 0.018 | 0.726 ± 0.015 |'max_depth': 30, 'min_samples_leaf': 33, 'max_features': 'sqrt' |
+| oblique_random_forest | 0.687 ± 0.017 | 0.727 ± 0.014 |'estimator__tree__max_depth': 13, 'estimator__tree__min_samples_leaf': 91, 'estimator__project__n_components': 8 |
+| adaboost | 0.723 ± 0.016 | 0.726 ± 0.014 |'estimator__max_depth': 4, 'n_estimators': 55, 'learning_rate': 0.16738085788752127 |
+| gradient_boosting | 0.726 ± 0.015 | 0.728 ± 0.014 |'n_estimators': 216, 'learning_rate': 0.016814344160113716, 'max_depth': 3, 'min_samples_leaf': 1, 'subsample': 0.5781493080610196 |
+| hist_gradient_boosting | 0.726 ± 0.015 | 0.728 ± 0.014 |'n_estimators': 216, 'learning_rate': 0.016814344160113716, 'max_depth': 3, 'min_samples_leaf': 1, 'subsample': 0.5781493080610196 |
+
+
+From these results and using ROC-AUC as the selected metric, the Gradient Boosting, Adaboost and Histogram Gradient Boosting models achieved the highest reported performance(~0.728), though their advantage over the other models is not that significant, with Naive bayes having the worst performance with(0.707).
