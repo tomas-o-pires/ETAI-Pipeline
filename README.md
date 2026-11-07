@@ -138,3 +138,26 @@ Overall, Week 7 focused on expanding the available models and making model evalu
 
 
 From these results and using ROC-AUC as the selected metric, the Gradient Boosting, Adaboost and Histogram Gradient Boosting models achieved the highest reported performance(~0.728), though their advantage over the other models is not that significant, with Naive bayes having the worst performance with(0.707).
+
+### Week 8
+This week, the pipeline was extended with a new model and a feature selection step, along with updates to configuration and results reporting.
+- XGBoost was added to the available models, with its own hyperparameter search space in config.yaml.
+- A feature selection step was added to the pipeline through a new VoteSelector class. It keeps only the features that receive at least a minimum number of votes (min_votes) from the selection methods. This minimum is tuned together with the model’s hyperparameters, so the number of selected features is optimized rather than fixed by hand.
+- The scoreboard now includes a feature_selection column.
+
+Overall, Week 8 focused on adding a stronger gradient boosting model and on reducing the feature set to the most relevant variables.
+
+### Scoreboard
+| Model | feature_selection | roc_auc (std) | untuned |
+|---|---|---|---|
+|naive_bayes|min_votes 1|0.708 (0.013)|0.704|
+|logistic_regression|min_votes 2|0.716 (0.011)|0.716|
+|decision_tree|min_votes 2|0.718 (0.012)|0.657|
+|random_forest|min_votes 3|0.723 (0.014)|0.672|
+|oblique_random_forest|min_votes 2|0.724 (0.012)|0.672|
+|adaboost|min_votes 1|0.723 (0.013)|0.721|
+|gradient_boosting|min_votes 2|0.726 (0.013)|0.723|
+|hist_gradient_boosting|min_votes 1|0.725 (0.013)|0.710|
+|xgboost|min_votes 3|0.725 (0.013)|0.721|
+
+With feature selection, XGBoost kept 2 of the 10 features ([numeric__age, numeric__priors_count]) and reached a tuned ROC-AUC of 0.725 ± 0.013, compared with 0.727 ± 0.016 using all features. This 0.002 difference is not that significant and the same pattern holds for the other models, whose scores changed by at most about 0.006 with selection.
