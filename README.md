@@ -163,12 +163,11 @@ Overall, Week 8 focused on adding a stronger gradient boosting model and on redu
 With feature selection, XGBoost kept 2 of the 10 features ([numeric__age, numeric__priors_count]) and reached a tuned ROC-AUC of 0.725 ± 0.013, compared with 0.727 ± 0.016 using all features. This 0.002 difference is not that significant and the same pattern holds for the other models, whose scores changed by at most about 0.006 with selection.
 
 ## Week 9
-Week 9 · Beyond COMPAS (Option A: Adult income)
-This week the pipeline was adapted to run on a new dataset, the UCI Adult dataset to analyse (does a person earn more than 50,000 USD a year?).
+(Option A: Adult income) This week the pipeline was adapted to run on a new dataset, the UCI Adult dataset to analyse (does a person earn more than 50,000 USD a year?).
 
 ### How to run
-python main.py                      # COMPAS, (reads config.yaml)
-python main.py config_adult.yaml    # Adult income
+- python main.py                      # COMPAS, (reads config.yaml)
+- python main.py config_adult.yaml    # Adult income
 
 
 ### What broke, and how it was fixed
