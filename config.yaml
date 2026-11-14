@@ -6,6 +6,7 @@ data:
   target: "two_year_recid"
   sensitive_attr: "race"          # excluded from model features, used only to audit fairness
   drop_columns: ["id", "decile_score", "score_text"]  # identifiers / COMPAS's own score, not our model's inputs
+  reference_score: {column: "score_text", negative_value: "Low", label: "COMPAS's own score"}
 
 
 # Added on Week 4: the FINAL TEST SET. Carved out once, stratified, and locked: never used to fit,

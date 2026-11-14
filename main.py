@@ -12,6 +12,7 @@ import shutil
 import tempfile
 import yaml
 import optuna
+import sys
 from datetime import datetime
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
@@ -21,6 +22,7 @@ from src.model import build_pipeline
 from src.evaluate import build_scorers, cross_validate_pipeline, cv_report, oof_classification_report, fairness_report
 from src.tuning import tune_pipeline, nested_cross_validate, tuning_report
 from src.results import save_run, save_scores
+from src.predict import predict_new_data, save_predictions
 
 
 
@@ -30,7 +32,8 @@ def load_config(path: str = "config.yaml") -> dict:
 
 
 def main():
-    config = load_config()
+    config_path = sys.argv[1] if len(sys.argv) > 1 else "config.yaml"
+    config = load_config(config_path)
     run = datetime.now().strftime("%Y%m%d_%H%M%S")
     model_type = config["model"]["type"]
 
@@ -117,7 +120,8 @@ def main():
     for name in metrics:
         print(f"  {name:<18s} {final_scores[name].mean():.3f} ± {final_scores[name].std(ddof=1):.3f}")
     report += "\n\n" + oof_classification_report(y_dev, oof_proba)
-    report += "\n" + fairness_report(y_dev, oof_proba, extras_dev, sensitive_attr=config["data"]["sensitive_attr"])
+    report += "\n" + fairness_report(y_dev, oof_proba, extras_dev, sensitive_attr=config["data"]["sensitive_attr"],
+                                     reference_score=config["data"].get("reference_score"))
 
     pipeline.fit(X_dev, y_dev)
     refit = f"Final model: {model_type} refit on all {len(X_dev)} development rows."
@@ -126,6 +130,12 @@ def main():
         kept = pipeline.named_steps["select"].get_feature_names_out(all_features)
         refit += f"\nFeatures kept: {len(kept)} of {len(all_features)}: {', '.join(kept)}"
     report += "\n" + refit + "\n"
+
+    if config.get("predict"):
+        predictions = predict_new_data(pipeline, config)
+        saved = save_predictions(predictions, config["predict"]["output"])
+        print(f"Predictions for {len(predictions)} new rows saved to {saved}")
+        report += f"\nPredictions for {len(predictions)} new rows saved to {saved}\n"
 
     row = {"run": run, "data": config["data"]["path"], "model": model_type, "tuned": tuning_enabled,
            "encoder": config["preprocessing"]["encoder"], "scaler": config["preprocessing"]["scaler"],

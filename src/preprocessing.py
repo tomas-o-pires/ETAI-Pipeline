@@ -40,6 +40,11 @@ def clean_dataset(df: pd.DataFrame, diagnostics_config: dict) -> pd.DataFrame:
 
     flag_invalid_values(out, diagnostics_config.get("validity_rules", {}))
 
+    # placeholder tokens ("?", "-", ...) -> NaN in every text column, not only the canonicalised ones
+    for col in out.select_dtypes(include=["object", "string"]).columns:
+        is_placeholder = out[col].astype(str).str.strip().isin(placeholder_tokens)
+        out.loc[is_placeholder, col] = np.nan
+
     out = _canonicalize_categories(out, diagnostics_config.get("canonical_categories", {}), placeholder_tokens)
 
     columns_to_drop = [c for c in diagnostics_config.get("redundant_columns", []) if c in out.columns]
@@ -81,7 +86,8 @@ def split_features_target(df: pd.DataFrame, data_config: dict, mnar_indicator_so
     df = add_missingness_indicators(df, mnar_indicator_sources)
     y = df[target] if target in df.columns else None
 
-    extras_cols = [c for c in [sensitive_attr, "score_text"] if c in df.columns]
+    reference_col = (data_config.get("reference_score") or {}).get("column")
+    extras_cols = [c for c in [sensitive_attr, reference_col] if c and c in df.columns]
     extras = df[extras_cols].copy() if extras_cols else None
 
     always_drop = set(drop_columns) | {target, sensitive_attr}

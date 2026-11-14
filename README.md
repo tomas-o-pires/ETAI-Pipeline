@@ -1,6 +1,6 @@
 20231652 Tomás Pires
 
-### Week 2
+## Week 2
 DT: Train accuracy: 0.829
 Test accuracy:  0.629
 Gap (train - test): +0.199
@@ -11,7 +11,7 @@ Gap (train - test): +0.003
 
 Conclusion: The Logistic Regression demonstrates better generalization than the Decision Tree. Although the Decision Tree achieves higher training accuracy, it has lower test accuracy giving a large train-test gap indicating overfitting. While the Logistic Regression achieves a lower training accuracy, but with a train-test gap of only 0.003 points.
 
-### Week 3
+## Week 3
 
 DT: Train accuracy: 0.789
 Test accuracy:  0.611
@@ -46,7 +46,7 @@ Conclusion this week results show a small decrease in both training and test acc
 - For Logistic Regression (LR), training accuracy decreased from 0.680 to 0.672, and test accuracy decreased from 0.677 to 0.667.
 
 
-### Week 4 
+## Week 4 
 
 Dummy: Cross-validation (5 stratified folds, metric: accuracy)
 
@@ -100,7 +100,7 @@ Conclusion
 The Week 4 results reinforce the pattern observed in previous weeks. Logistic Regression continues to show the strongest generalization, with the highest validation accuracy and the smallest train-validation gap. The Decision Tree continues to show signs of overfitting, although its gap has decreased compared with Week 3. Random Forest improves validation performance compared with the individual Decision Tree, but still has a substantially larger train-validation gap than Logistic Regression.
 More relevant is the fact this week improves the reliability of the models. Instead of drawing conclusions from one train-test split, the models are now compared using five stratified folds, while the final test set remains untouched for later evaluation.
 
-### Weeks 5/6
+## Weeks 5/6
 
 Weeks 5 and 6 were done together, focusing on hyperparameter tuning and ensemble learning methods. Hyperparameter tuning was introduced to optimize model configurations and improve predictive performance(tuning.py was added). Additionally, two new ensemble models, Oblique Random Forest and AdaBoost, were implemented to expand the range of models evaluated and compare their performance against the existing classifiers.
 
@@ -115,7 +115,7 @@ Weeks 5 and 6 were done together, focusing on hyperparameter tuning and ensemble
 
 From these results, the best model for now is AdaBoost, which achieves a nested cross-validation accuracy of 0.681 ± 0.012, with a small train-validation gap of +0.006. Although Oblique Random Forest achieves a slightly higher accuracy (0.682), AdaBoost has a lower standard deviation and a smaller train-validation gap, being more consistent regarding performance with less overfitting.
 
-### Week 7
+## Week 7
 This week, the pipeline was expanded with new models and improvements to model evaluation, hyperparameter tuning, and results reporting.
  - Additional models such as Gradient Boosting, Histogram Gradient Boosting, and Naive Bayes were added, allowing for more algorithms to be compared.
  - The evaluation process was improved to support different scoring metrics instead of relying only on accuracy, having the selection_metric as "roc_auc".
@@ -139,7 +139,7 @@ Overall, Week 7 focused on expanding the available models and making model evalu
 
 From these results and using ROC-AUC as the selected metric, the Gradient Boosting, Adaboost and Histogram Gradient Boosting models achieved the highest reported performance(~0.728), though their advantage over the other models is not that significant, with Naive bayes having the worst performance with(0.707).
 
-### Week 8
+## Week 8
 This week, the pipeline was extended with a new model and a feature selection step, along with updates to configuration and results reporting.
 - XGBoost was added to the available models, with its own hyperparameter search space in config.yaml.
 - A feature selection step was added to the pipeline through a new VoteSelector class. It keeps only the features that receive at least a minimum number of votes (min_votes) from the selection methods. This minimum is tuned together with the model’s hyperparameters, so the number of selected features is optimized rather than fixed by hand.
@@ -161,3 +161,29 @@ Overall, Week 8 focused on adding a stronger gradient boosting model and on redu
 |xgboost|min_votes 3|0.725 (0.013)|0.721|
 
 With feature selection, XGBoost kept 2 of the 10 features ([numeric__age, numeric__priors_count]) and reached a tuned ROC-AUC of 0.725 ± 0.013, compared with 0.727 ± 0.016 using all features. This 0.002 difference is not that significant and the same pattern holds for the other models, whose scores changed by at most about 0.006 with selection.
+
+## Week 9
+Week 9 · Beyond COMPAS (Option A: Adult income)
+This week the pipeline was adapted to run on a new dataset, the UCI Adult dataset to analyse (does a person earn more than 50,000 USD a year?).
+
+### How to run
+python main.py                      # COMPAS, (reads config.yaml)
+python main.py config_adult.yaml    # Adult income
+
+
+### What broke, and how it was fixed
+| What broke | Why | Fix |
+|---|---|---|
+|main.py could only run COMPAS| load_config() always read config.yaml |main.py takes a config path as an argument (sys.argv), defaulting to config.yaml|
+|? stayed in the data as a category |	placeholder tokens were only turned into NaN inside _canonicalize_categories(), which only touches the columns listed in canonical_categories |	clean_dataset() now turns placeholder tokens into NaN in every text column|
+|KeyError: 'score_text' in the fairness report|	COMPAS's own score column was hardcoded in split_features_target() and fairness_report() | The report compares against it only when it is set (COMPAS), and the wording is now generic|
+| COMPAS validity rules did not fit new dataset | rules are not the same for every dataset |Adult's own rules in config_adult.yaml|
+|No way to predict new data| the pipeline only evaluated and refit |new src/predict.py: same cleaning and feature split as training, no drop_duplicate_rows|
+|Scoreboard would mix datasets|	both datasets would write to results/runs.csv|	separate output folder in each config|
+
+### Scoreboard
+| Model | feature_selection | roc_auc (std) | untuned roc_auc | F1 | Accuracy |
+|---|---|---|---|---|---|
+| dummy |  | 0.5 | 0.5 | 0 | 0.76 |
+| xgboost | min_votes 2 | 0.909 (0.014)| 0.913 | 0.675 | 0.860 |
+

@@ -91,7 +91,7 @@ def oof_classification_report(y_true, oof_proba, threshold: float = 0.5) -> str:
             f"{cm.to_string()}\n\n{classification_report(y_true, y_pred, zero_division=0)}")
 
 
-def fairness_report(y_true, oof_proba, extras: pd.DataFrame, sensitive_attr: str = "race", threshold: float = 0.5) -> str:
+def fairness_report(y_true, oof_proba, extras: pd.DataFrame, sensitive_attr: str, threshold: float = 0.5, reference_score: dict = None) -> str:
     """
     Deliberately simple fairness check -- not a substitute for a real audit, just enough to show that "accuracy" and "fair" are not the same thing.
 
@@ -105,7 +105,10 @@ def fairness_report(y_true, oof_proba, extras: pd.DataFrame, sensitive_attr: str
     df[sensitive_attr] = df[sensitive_attr].astype(object).fillna("unknown")
     df["y_true"] = pd.Series(y_true).values
     df["y_pred_model"] = (oof_proba >= threshold).astype(int)
-    df["y_pred_compas"] = (df["score_text"] != "Low").astype(int)
+    predictions = [("Our model", "y_pred_model")]
+    if reference_score and reference_score["column"] in df.columns:
+        df["y_pred_ref"] = (df[reference_score["column"]] != reference_score["negative_value"]).astype(int)
+        predictions.append((reference_score.get("label", "Reference score"), "y_pred_ref"))
 
     lines = [
         f"False positive rate by {sensitive_attr} (development set, out-of-fold)",
@@ -113,7 +116,7 @@ def fairness_report(y_true, oof_proba, extras: pd.DataFrame, sensitive_attr: str
         "",
     ]
 
-    for label, col in [("Our model", "y_pred_model"), ("COMPAS's own score", "y_pred_compas")]:
+    for label, col in predictions:
         lines.append(f"  {label}:")
         for group, g in df.groupby(sensitive_attr):
             negatives = g[g["y_true"] == 0]
