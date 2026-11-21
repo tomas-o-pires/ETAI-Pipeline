@@ -71,8 +71,11 @@ preprocessing:
   mnar_indicator_sources: ["priors_count", "c_charge_degree"]   # get a <col>_was_missing flag
   random_state: 42                                  # target encoder's internal folds
   imputation:
-    numeric_strategy: "median"
+    numeric_strategy: "random_forest"                      # median | mean | knn | iterative | random_forest
     categorical_strategy: "most_frequent"
+    n_neighbors: 5                                  # knn
+    max_iter: 10                                    # iterative, random_forest
+    n_estimators: 50                                # random_forest (trees per column)
 
 
 #Updated on week 7:. 
@@ -102,7 +105,7 @@ feature_selection:
 
 #added on week 6: hyperparameter tuning. 
 tuning:
-  enabled: true
+  enabled: false
   n_trials: 30
   n_splits: 5                                       # folds that score each candidate
   random_state: 42                                  # seeds the sampler and those folds
@@ -156,4 +159,5 @@ tuning:
 
 output:
   results_dir: "results"   # each run's full report is saved here as a timestamped .txt file
+  model_path: "models/model.joblib"  # the final fitted pipeline, used by predict.py (overwritten each run)
   scoreboard: "results/runs.csv"  # one row per run; delete it when the data, cleaning or folds change

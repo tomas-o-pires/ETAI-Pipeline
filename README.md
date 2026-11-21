@@ -186,3 +186,43 @@ With feature selection, XGBoost kept 2 of the 10 features ([numeric__age, numeri
 | dummy |  | 0.5 | 0.5 | 0 | 0.76 |
 | xgboost | min_votes 2 | 0.909 (0.014)| 0.913 | 0.675 | 0.860 |
 
+## Week 10
+This week the imputer became a setting in config.yaml: median, mean, knn, iterative or random_forest. They were added in a new _NUMERIC_IMPUTERS dictionary in src/preprocessing.py, and build_preprocessor() now scales the numeric columns first and then imputes, because KNN needs all columns on the same scale.
+
+Main.py now saves the final fitted pipeline to models/model.joblib (output.model_path). 
+And pred.py loads it, cleans the new file with the training rules, without drop_duplicate_rows(), so every row gets a prediction and writes id, probability and prediction (threshold 0.5):
+
+### Scoreboard (XGBOOST untuned)
+| imputer | roc_auc (std) | 
+|---|---|
+| median | 0.721 (0.013) |
+| mean | 0.720 (0.014) |
+| knn | 0.720 (0.011) |
+| iterative | 0.721 (0.014) |
+| random_forest | 0.721 (0.013) |
+
+### prediction results
+
+|id|probability|prediction|
+|---|---|---|
+|900001|0.5152289|1|
+|900002|0.2895547|0|
+|900003|0.3504241|0|
+|900004|0.5089558|1|
+|900005|0.3771013|0|
+|900006|0.61310786|1|
+|900007|0.43267715|0|
+|900008|0.42228296|0|
+|900009|0.19221552|0|
+|900010|0.34199584|0|
+|900011|0.1954701|0|
+|900012|0.88729805|1|
+|900013|0.47601312|0|
+|900014|0.7074971|1|
+|900015|0.4801668|0|
+|900016|0.4801668|0|
+|900017|0.72893476|1|
+|900018|0.2844232|0|
+|900019|0.34277713|0|
+|900020|0.44525927|0|
+

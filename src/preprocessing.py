@@ -5,8 +5,10 @@ the leak-safe preprocessor and the development/test split.
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.experimental import enable_iterative_imputer
 from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
+from sklearn.impute import IterativeImputer, KNNImputer, SimpleImputer
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, TargetEncoder, StandardScaler, MinMaxScaler, RobustScaler
 from category_encoders import CountEncoder
@@ -110,6 +112,19 @@ _ENCODERS = {
     "target": lambda seed: TargetEncoder(cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=seed,),target_type="binary"),
 }
 
+# Numeric imputers. "iterative" is MICE with one completed dataset; "random_forest" is the
+# missForest idea (each column predicted from the others by a random forest). Both learn only
+# from the feature columns, never from the target, so they also run on data to predict.
+_NUMERIC_IMPUTERS = {
+    "median": lambda cfg, seed: SimpleImputer(strategy="median"),
+    "mean": lambda cfg, seed: SimpleImputer(strategy="mean"),
+    "knn": lambda cfg, seed: KNNImputer(n_neighbors=cfg.get("n_neighbors", 5)),
+    "iterative": lambda cfg, seed: IterativeImputer(max_iter=cfg.get("max_iter", 10), random_state=seed),
+    "random_forest": lambda cfg, seed: IterativeImputer(
+        estimator=RandomForestRegressor(n_estimators=cfg.get("n_estimators", 50), min_samples_leaf=5,
+                                        random_state=seed, n_jobs=-1),
+        max_iter=cfg.get("max_iter", 10), random_state=seed),
+}
 
 def build_preprocessor(preprocessing_config: dict) -> ColumnTransformer:
     """
@@ -124,9 +139,12 @@ def build_preprocessor(preprocessing_config: dict) -> ColumnTransformer:
     scaler_factory = _SCALERS[preprocessing_config["scaler"]]
     scaler = scaler_factory() if callable(scaler_factory) else scaler_factory
     encoder = _ENCODERS[preprocessing_config["encoder"]](preprocessing_config.get("random_state"))
+    numeric_strategy = imputation.get("numeric_strategy", "median")
+    if numeric_strategy not in _NUMERIC_IMPUTERS:
+        raise ValueError(f"Unknown numeric_strategy: {numeric_strategy}. Options: {list(_NUMERIC_IMPUTERS)}")
 
     numeric_pipeline = Pipeline([
-        ("impute", SimpleImputer(strategy=imputation.get("numeric_strategy", "median"))),
+        ("impute", _NUMERIC_IMPUTERS[numeric_strategy](imputation, preprocessing_config.get("random_state"))),
         ("scale", scaler),
     ])
     categorical_pipeline = Pipeline([
